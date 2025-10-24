@@ -43,10 +43,5 @@ This repo contains a **redacted** `evcc.yaml`. Replace the placeholders like `<R
 - **Sponsor token**: How to set `sponsortoken:`.  
   https://docs.evcc.io/en/docs/reference/configuration/sponsortoken
 
-## Security notes
-- **Never commit real secrets** — keep tokens/passwords out of Git history.
-- If you previously shared secrets, **rotate them**.
-- Consider creating a private repo for your real (non-redacted) config.
-
 ## License
 You may copy and adapt this template for your own use.
