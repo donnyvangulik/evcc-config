@@ -1,0 +1,200 @@
+network:
+  schema: http
+  host: evcc.local # .local suffix announces the hostname on MDNS
+  port: 7070
+
+log: debug
+levels:
+  cache: error
+
+plant: 5188692d90a8bfa058b708506e997d3470f8dec3f9a387933d50ea55f53e90d4
+
+interval: 30s # control cycle interval
+
+sponsortoken: <REDACTED-TOKEN>
+telemetry: false
+
+circuits:
+  - name: main # if there is only one circuit defined the name needs to be 'main'
+    title: 'main circuit' # name for the UI (not implemented in UI yet)
+    maxCurrent: 25 # 63A (optional)
+    maxPower: 14000 # 30kW (optional)
+    meter: grid
+
+meters:
+- type: template
+  template: slimmelezer-V2
+  usage: grid
+  host: <REDACTED-IP>
+  name: grid
+- name: pv
+  type: template
+  template: shelly-pro-3em
+  usage: pv
+  host: <REDACTED-IP>
+- name: wp_boiler_power
+  type: template
+  template: shelly-1pm
+  host: <REDACTED-IP>
+- name: zolder_boiler_power
+  type: custom
+  power:
+    source: http
+    uri: http://<REDACTED-IP>:8123/api/states/sensor.boiler_power
+    method: GET
+    headers:
+      - Authorization: "Bearer <REDACTED-TOKEN>"
+    jq: .state | tonumber          # ensure numeric (W)
+    scale: 1
+  energy:
+    source: http
+    uri: http://<REDACTED-IP>:8123/api/states/sensor.boiler_energy
+    method: GET
+    headers:
+      - Authorization: "Bearer <REDACTED-TOKEN>"
+    jq: .state | tonumber          # ensure numeric (kWh)
+
+chargers:
+- name: my_charger
+  type: template
+  template: alfen
+  modbus: tcpip
+  id: 1
+  host: <REDACTED-IP> # Hostname
+  port: 502 # Port
+- name: wp_boiler
+  type: template
+  template: shelly
+  host: <REDACTED-IP>
+  standbypower: -1700
+  integrateddevice: true # Integrated device (no vehicle connection) (optional)
+  heating: true # Heating device (°C instead of %) (optional)
+  icon: heatpump
+
+vehicles:
+  - name: my_car
+    type: custom
+    title: Model Y # display name for UI
+    capacity: 69 # netto battery capacity (kWh)
+    phases: 3
+    icon: car
+    soc: # battery soc (%)
+      source: http # plugin type
+      uri: http://<REDACTED-IP>:8123/api/states/sensor.tesla_ble_ethernet_charge_level
+      method: GET
+      headers:
+        - Authorization: "Bearer <REDACTED-TOKEN>"
+      insecure: true
+      jq: .state | tonumber
+    status: # zorgt ervoor dat hij stopt met charge amps te sturen als de auto niet verbonden is
+      source: combined
+      plugged:
+        source: http
+        uri: http://<REDACTED-IP>:8123/api/states/binary_sensor.tesla_ble_ethernet_charge_flap
+        method: GET
+        headers:
+          - Authorization: "Bearer <REDACTED-TOKEN>"
+        insecure: true
+        jq: .state == "on"
+      charging:
+        source: http
+        uri: http://<REDACTED-IP>:8123/api/states/sensor.tesla_ble_ethernet_charging_state
+        method: GET
+        headers:
+          - Authorization: "Bearer <REDACTED-TOKEN>"
+        insecure: true
+        jq: .state == "charging"
+    limitsoc: # optional in-vehicle limit soc, read-only (%)
+      source: http # plugin type
+      uri: http://<REDACTED-IP>:8123/api/states/number.tesla_ble_ethernet_charging_limit
+      method: GET
+      headers:
+        - Authorization: "Bearer <REDACTED-TOKEN>"
+      insecure: true
+      jq: .state | tonumber
+    maxcurrent: # set charger max current (A)
+      source: http # plugin type
+      uri: http://<REDACTED-IP>:8123/api/services/number/set_value
+      method: POST
+      headers:
+        - Authorization: "Bearer <REDACTED-TOKEN>"
+        - Content-Type: application/json
+      body: '{"entity_id": "number.tesla_ble_ethernet_charging_amps", "value": "${maxcurrent}"}'
+      insecure: true
+    wakeup: # vehicle wake up command
+      source: http
+      uri: http://<REDACTED-IP>:8123/api/states/button.tesla_ble_ethernet_wake_up
+      jq: .state == "on"
+      headers:
+        - Authorization: "Bearer <REDACTED-TOKEN>"
+    chargeenable:
+      source: http
+      uri: http://<REDACTED-IP>:8123/api/services/switch/{{ if .chargeenable }}turn_on{{ else }}turn_off{{ end }}
+      method: POST
+      body: '{"entity_id": "switch.tesla_ble_ethernet_charger"}'
+      headers:
+        - Authorization: "Bearer <REDACTED-TOKEN>"
+        - Content-Type: application/json
+    range:
+      source: http # plugin type
+      uri: http://<REDACTED-IP>:8123/api/states/sensor.tesla_ble_ethernet_range
+      method: GET
+      headers:
+        - Authorization: "Bearer <REDACTED-TOKEN>"
+      insecure: true
+      jq: .state | tonumber
+    odometer:
+      source: http # plugin type
+      uri: http://<REDACTED-IP>:8123/api/states/sensor.tesla_ble_ethernet_odometer
+      method: GET
+      headers:
+        - Authorization: "Bearer <REDACTED-TOKEN>"
+      insecure: true
+      jq: .state | tonumber
+    climater:
+      source: http
+      uri: http://<REDACTED-IP>:8123/api/states/binary_sensor.tesla_ble_ethernet_climate
+      method: GET
+      headers:
+        - Authorization: "Bearer <REDACTED-TOKEN>"
+      insecure: true
+      jq: .state == "on"
+  - name: dhw
+    type: custom
+    title: Warmtepomp Boiler
+    icon: waterheater
+    phases: 1
+    soc:
+     source: mqtt
+     broker: <REDACTED-IP>:1883
+     user: donny
+     password: <REDACTED-PASSWORD>
+     topic: panasonic_heat_pump/main/DHW_Temp
+     timeout: 30m
+
+loadpoints:
+- title: Oprit
+  charger: my_charger
+  vehicle: my_car
+  mode: pv
+  circuit: main
+  priority: 10
+- title: Warmtepomp Boiler
+  charger: wp_boiler
+  meter: wp_boiler_power
+  priority: 2
+  mode: pv
+  circuit: main
+  vehicle: dhw
+
+site:
+- title: Thuis
+  meters:
+    grid: grid
+    pv:
+      - pv
+    aux: zolder_boiler_power
+
+mqtt:
+  broker: <REDACTED-IP>:1883
+  topic: evcc

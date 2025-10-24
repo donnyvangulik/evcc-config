@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  evcc:
+    image: evcc/evcc:latest
+    container_name: evcc
+    command: ["evcc"]
+    ports:
+      - "7070:7070/tcp"
+      - "8887:8887/tcp"
+      - "7090:7090/udp"
+      - "9522:9522/udp"
+    volumes:
+      - ./evcc.yaml:/etc/evcc.yaml:ro
+      - ./data:/root/.evcc
+    restart: unless-stopped
