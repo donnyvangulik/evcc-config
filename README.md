@@ -1,6 +1,6 @@
 # EVCC Home Setup (Redacted)
 
-This repo contains a **redacted** `evcc.yaml` you can share publicly. Replace the placeholders like `<REDACTED-IP>`, `<REDACTED-TOKEN>`, and `<REDACTED-PASSWORD>` with your real values locally **before running EVCC**.
+This repo contains a **redacted** `evcc.yaml`. Replace the placeholders like `<REDACTED-IP>`, `<REDACTED-TOKEN>`, and `<REDACTED-PASSWORD>` with your real values locally **before running EVCC**.
 
 ![EVCC Dashboard](./evcc_dashboard.jpg)
 > Add your screenshot file as `evcc_dashboard.jpg` in the repository root.
@@ -9,7 +9,7 @@ This repo contains a **redacted** `evcc.yaml` you can share publicly. Replace th
 - `evcc.yaml` — Your EVCC configuration (IPs, tokens, and passwords redacted).
 - `docker-compose.yml` — Minimal compose to run EVCC with this config.
 - `.gitignore` — Keeps local data/db and secrets out of Git.
-- `evcc_dashboard.jpg` — *(you add this)* UI screenshot for the README.
+- `evcc_dashboard.jpg` — UI screenshot for the README.
 
 ## Quick start (Docker)
 1. Edit `evcc.yaml` and replace every `<REDACTED-...>` placeholder with your real values.
