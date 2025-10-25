@@ -27,6 +27,9 @@ This repo contains a **redacted** `evcc.yaml`. Replace the placeholders like `<R
 
 > Default config locations are `/etc/evcc.yaml` or the same directory as the binary; you can also pass a custom path via `-c`. See the official docs for details.  
 
+
+## My ESPHome version for PoE BLE Proxy for Tesla can be found on my github page
+https://github.com/donnyvangulik/esphome-teslable-poe
 ## Useful EVCC docs
 - **Introduction / Home**: Overview & concepts.  
   https://docs.evcc.io/en/docs/Home
