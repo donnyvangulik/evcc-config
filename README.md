@@ -3,7 +3,7 @@
 This repo contains a **redacted** `evcc.yaml`. Replace the placeholders like `<REDACTED-IP>`, `<REDACTED-TOKEN>`, and `<REDACTED-PASSWORD>` with your real values locally **before running EVCC**.
 
 ![EVCC Dashboard](./evcc_dashboard.jpg)
-> Add your screenshot file as `evcc_dashboard.jpg` in the repository root.
+
 
 ## What’s inside
 - `evcc.yaml` — Your EVCC configuration (IPs, tokens, and passwords redacted).
